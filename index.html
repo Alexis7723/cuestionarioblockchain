@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario Blockchain</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 30px;
+        }
+        h1 { font-size: 1.8em; margin-bottom: 10px; }
+        h2 { color: #2c3e50; margin-bottom: 20px; text-align: center; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1.1em;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: 0.3s;
+        }
+        button:hover { background: #5a6fd8; }
+        .question {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        .question h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        label:hover { background: #e3f2fd; }
+        input[type="radio"] { margin-right: 10px; }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        .results {
+            text-align: center;
+        }
+        .results h2 { color: #27ae60; }
+        .results p { font-size: 1.3em; margin: 15px 0; }
+        .correct { color: #27ae60; font-weight: bold; }
+        .incorrect { color: #e74c3c; font-weight: bold; }
+        .hidden { display: none; }
+        @media (max-width: 480px) {
+            .container { margin: 10px; }
+            h1 { font-size: 1.5em; }
+            .content { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cuestionario de Blockchain</h1>
+        </div>
+
+        <div class="content">
+            <!-- Pantalla inicial -->
+            <div id="welcome" class="welcome">
+                <h2>¡Bienvenido al examen de Blockchain!</h2>
+                <p>Por favor ingresa tu nombre para comenzar:</p>
+                <input type="text" id="studentName" placeholder="Tu nombre completo" autocomplete="off">
+                <br><br>
+                <button onclick="startQuiz()">Iniciar Cuestionario</button>
+            </div>
+
+            <!-- Cuestionario -->
+            <div id="quiz" class="hidden">
+                <div id="questionContainer"></div>
+                <div class="navigation">
+                    <button id="prevBtn" onclick="prevQuestion()" disabled>Anterior</button>
+                    <button id="nextBtn" onclick="nextQuestion()">Siguiente</button>
+                </div>
+            </div>
+
+            <!-- Resultados -->
+            <div id="results" class="results hidden">
+                <h2>¡Cuestionario terminado, <span id="finalName"></span>!</h2>
+                <p>Tu puntuación: <strong id="score"></strong> / 10</p>
+                <div id="review"></div>
+                <br>
+                <button onclick="location.reload()">Volver a intentarlo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Banco de preguntas (más de 15 para aleatoriedad real)
+        const questionBank = [
+            {
+                question: "¿Quién creó Bitcoin?",
+                options: ["Vitalik Buterin", "Satoshi Nakamoto", "Charlie Lee", "Gavin Wood"],
+                answer: 1
+            },
+            {
+                question: "¿Qué algoritmo de consenso usa Bitcoin?",
+                options: ["Proof of Stake", "Proof of Work", "Delegated Proof of Stake", "Proof of Authority"],
+                answer: 1
+            },
+            {
+                question: "¿Qué es un 'bloque génesis'?",
+                options: ["El último bloque de la cadena", "El primer bloque de una blockchain", "Un bloque vacío", "Un bloque de recompensa doble"],
+                answer: 1
+            },
+            {
+                question: "¿Cuál es el tamaño máximo de un bloque en Bitcoin (actualmente)?",
+                options: ["4 MB", "1 MB", "2 MB", "8 MB"],
+                answer: 1
+            },
+            {
+                question: "¿Qué función hash utiliza Bitcoin?",
+                options: ["KECCAK-256", "SHA-256", "RIPEMD-160", "BLAKE2"],
+                answer: 1
+            },
+            {
+                question: "¿Qué es un 'smart contract'?",
+                options: ["Un contrato físico digitalizado", "Código que se ejecuta automáticamente al cumplir condiciones", "Un contrato legal en blockchain", "Un acuerdo entre mineros"],
+                answer: 1
+            },
+            {
+                question: "¿En qué año se publicó el whitepaper de Bitcoin?",
+                options: ["2008", "2009", "2010", "2007"],
+                answer: 0
+            },
+            {
+                question: "¿Qué es un 'fork' en blockchain?",
+                options: ["Una copia de seguridad", "Una bifurcación de la cadena", "Un error de minado", "Un ataque 51%"],
+                answer: 1
+            },
+            {
+                question: "¿Cuál NO es una característica principal de blockchain?",
+                options: ["Descentralización", "Inmutabilidad", "Transparencia", "Centralización total"],
+                answer: 3
+            },
+            {
+                question: "¿Qué es el 'halving' en Bitcoin?",
+                options: ["División de la recompensa por bloque cada ~4 años", "Duplicación de la dificultad", "Aumento del supply máximo", "Reducción del tamaño de bloque"],
+                answer: 0
+            },
+            {
+                question: "¿Qué es un 'nonce' en minería?",
+                options: ["Un número único de transacción", "Un número que se ajusta para que el hash cumpla la dificultad", "El identificador del minero", "El timestamp del bloque"],
+                answer: 1
+            },
+            {
+                question: "¿Qué blockchain introdujo los smart contracts de forma nativa?",
+                options: ["Bitcoin", "Ethereum", "Litecoin", "Ripple"],
+                answer: 1
+            },
+            {
+                question: "¿Qué es un '51% attack'?",
+                options: ["Un ataque DoS a nodos", "Cuando una entidad controla más del 50% del poder de minado", "Un robo de claves privadas", "Un phishing masivo"],
+                answer: 1
+            },
+            {
+                question: "¿Qué es un 'private key'?",
+                options: ["La clave pública para recibir fondos", "La clave secreta que prueba propiedad de una dirección", "El password de una wallet", "El seed phrase completo"],
+                answer: 1
+            },
+            {
+                question: "¿Cuál es el suministro máximo de Bitcoin?",
+                options: ["18 millones", "21 millones", "100 millones", "No tiene límite"],
+                answer: 1
+            }
+        ];
+
+        let selectedQuestions = [];
+        let currentQuestion = 0;
+        let answers = [];
+        let studentName = "";
+
+        function startQuiz() {
+            studentName = document.getElementById("studentName").value.trim();
+            if (studentName === "") {
+                alert("Por favor ingresa tu nombre");
+                return;
+            }
+
+            // Seleccionar 10 preguntas aleatorias del banco
+            selectedQuestions = [...questionBank]
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 10);
+
+            answers = new Array(10).fill(null);
+            currentQuestion = 0;
+
+            document.getElementById("welcome").classList.add("hidden");
+            document.getElementById("quiz").classList.remove("hidden");
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = selectedQuestions[currentQuestion];
+            const container = document.getElementById("questionContainer");
+            
+            container.innerHTML = `
+                <div class="question">
+                    <h3>Pregunta ${currentQuestion + 1} de 10</h3>
+                    <p><strong>${q.question}</strong></p>
+                    ${q.options.map((opt, i) => `
+                        <label>
+                            <input type="radio" name="q${currentQuestion}" value="${i}" 
+                                ${answers[currentQuestion] === i ? 'checked' : ''}>
+                            ${opt}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+
+            // Guardar respuesta al seleccionar
+            container.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.onchange = () => {
+                    answers[currentQuestion] = parseInt(radio.value);
+                };
+            });
+
+            // Control de botones
+            document.getElementById("prevBtn").disabled = currentQuestion === 0;
+            document.getElementById("nextBtn").textContent = currentQuestion === 9 ? "Terminar" : "Siguiente";
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < 9) {
+                currentQuestion++;
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                showQuestion();
+            }
+        }
+
+        function finishQuiz() {
+            let correct = 0;
+            let reviewHTML = "";
+
+            selectedQuestions.forEach((q, i) => {
+                const userAnswer = answers[i];
+                const correctAnswer = q.answer;
+                if (userAnswer === correctAnswer) correct++;
+
+                reviewHTML += `
+                    <div class="question">
+                        <p><strong>${i + 1}. ${q.question}</strong></p>
+                        <p>Tu respuesta: <span class="${userAnswer === correctAnswer ? 'correct' : 'incorrect'}">
+                            ${userAnswer !== null ? q.options[userAnswer] : "Sin respuesta"}
+                        </span></p>
+                        ${userAnswer !== correctAnswer ? 
+                            `<p class="correct">Respuesta correcta: ${q.options[correctAnswer]}</p>` : ''}
+                    </div>
+                `;
+            });
+
+            document.getElementById("quiz").classList.add("hidden");
+            document.getElementById("results").classList.remove("hidden");
+            document.getElementById("finalName").textContent = studentName;
+            document.getElementById("score").textContent = correct;
+            document.getElementById("review").innerHTML = reviewHTML;
+        }
+    </script>
+  <script src='https://cdn.jotfor.ms/agent/embedjs/019aadcba7ea7c9fa9edd8f034a48050cd59/embed.js'>
+</script>
+</body>
+</html>
